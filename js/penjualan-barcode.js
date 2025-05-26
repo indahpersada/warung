@@ -4,7 +4,7 @@ let scannerAktif = false;
 
 const config = {
   fps: 10,
-  qrbox: 250,
+  qrbox: { width: 250, height: 250 },
   formatsToSupport: [
     Html5QrcodeSupportedFormats.CODE_128,
     Html5QrcodeSupportedFormats.EAN_13,
