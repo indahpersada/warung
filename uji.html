@@ -2,101 +2,111 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Uji Scanner Barcode + Beep</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <title>Uji Scanner Barcode</title>
   <style>
-    #scanner {
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-      padding: 10px;
-      border: 2px dashed #ccc;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 16px;
-    }
+    #scanner { width: 300px; margin: auto; border: 2px solid #ccc; border-radius: 10px; }
+    #hasil { margin-top: 10px; font-size: 1.2em; }
+    button, select { padding: 10px 15px; margin: 10px 5px; }
   </style>
 </head>
 <body>
+  <h2>🔍 Uji Scanner Barcode</h2>
 
-  <h2>🔍 Uji Coba Scanner Barcode</h2>
+  <select id="cameraSelect"></select>
+  <button onclick="mulaiScanner()">🎥 Mulai Scan</button>
+  <button onclick="hentikanScanner()">⏹️ Stop</button>
+
   <div id="scanner"></div>
-  <button onclick="mulaiScanner()">Mulai Scanner</button>
-  <button onclick="stopScanner()">Stop Scanner</button>
+  <div id="hasil"></div>
 
   <!-- Suara beep lokal -->
-  <audio id="beep" src="beep.wav" preload="auto"></audio>
+  <audio id="beep" src="beep.mp3" preload="auto"></audio>
+
+  <!-- Library html5-qrcode -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <script>
-    let html5Qr;
+    let html5Qr = null;
     let scannerAktif = false;
+    const config = {
+      fps: 10,
+      qrbox: 250,
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E
+      ]
+    };
 
-    function mulaiScanner() {
-      if (scannerAktif) return;
-
-      const scannerDiv = document.getElementById("scanner");
-      const beep = document.getElementById("beep");
-
-      html5Qr = new Html5Qrcode("scanner");
-
+    function loadCameras() {
+      const cameraSelect = document.getElementById("cameraSelect");
       Html5Qrcode.getCameras().then(cameras => {
-        if (!cameras || cameras.length === 0) {
-          alert("🚨 Kamera tidak tersedia");
+        cameraSelect.innerHTML = "";
+        if (cameras.length === 0) {
+          alert("🚨 Kamera tidak ditemukan.");
           return;
         }
-
-        const cam = cameras[0]; // Gunakan kamera pertama yang ditemukan
-
-        html5Qr.start(
-          cam.id,
-          {
-            fps: 10,
-            qrbox: 250,
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.CODE_39,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E
-            ]
-          },
-          kode => {
-            console.log("✅ Barcode:", kode);
-            beep.play().catch(err => console.warn("🔇 Gagal play beep:", err));
-
-            // Stop scanner setelah scan berhasil
-            html5Qr.stop().then(() => {
-              scannerDiv.innerHTML = ""; // Bersihkan area scanner
-              scannerAktif = false;
-              alert("📦 Barcode: " + kode);
-            });
-          },
-          err => {
-            // Bisa abaikan atau log error ringan
-          }
-        ).then(() => {
-          scannerAktif = true;
-        }).catch(err => {
-          alert("🚫 Gagal akses kamera: " + err);
+        cameras.forEach((cam, i) => {
+          const option = document.createElement("option");
+          option.value = cam.id;
+          option.text = cam.label || `Kamera ${i + 1}`;
+          cameraSelect.appendChild(option);
         });
-
       }).catch(err => {
-        alert("❌ Tidak bisa ambil kamera: " + err);
+        console.error("❌ Tidak bisa mendeteksi kamera:", err);
+        alert("🚨 Kamera tidak tersedia.");
       });
     }
 
-    function stopScanner() {
+    function mulaiScanner() {
+      const cameraId = document.getElementById("cameraSelect").value;
+      const scannerDiv = document.getElementById("scanner");
+      const hasilDiv = document.getElementById("hasil");
+      const beep = document.getElementById("beep");
+
+      if (scannerAktif) return;
+
+      html5Qr = new Html5Qrcode("scanner");
+      html5Qr.start(
+        cameraId,
+        config,
+        (kode) => {
+          console.log("📦 Barcode:", kode);
+          beep.play();
+          hasilDiv.innerText = "✅ Barcode: " + kode;
+
+          html5Qr.stop().then(() => {
+            scannerDiv.innerHTML = "";
+            scannerAktif = false;
+          }).catch(err => console.warn("❌ Gagal stop:", err));
+        },
+        (err) => {
+          // console.log("Tidak terbaca:", err);
+        }
+      ).then(() => {
+        scannerAktif = true;
+      }).catch(err => {
+        console.error("❌ Gagal mulai scanner:", err);
+        alert("🚨 Tidak bisa akses kamera.");
+      });
+    }
+
+    function hentikanScanner() {
       if (html5Qr && scannerAktif) {
         html5Qr.stop().then(() => {
           document.getElementById("scanner").innerHTML = "";
           scannerAktif = false;
+        }).catch(err => {
+          console.warn("Gagal stop scanner:", err);
         });
       }
     }
-  </script>
 
+    // Inisialisasi dropdown saat halaman dimuat
+    window.onload = loadCameras;
+  </script>
 </body>
 </html>
