@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cetak Struk</title>
+  <link rel="stylesheet" href="css/print.css">
+  <style>
+    body {
+      font-family: monospace;
+      padding: 10px;
+      width: 240px; /* standar printer termal 58mm */
+    }
+    h2, p, div {
+      text-align: center;
+      margin: 4px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td {
+      font-size: 12px;
+    }
+    .right {
+      text-align: right;
+    }
+    .total {
+      border-top: 1px dashed #000;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body onload="renderStruk()">
+  <div id="struk">
+    <h2 id="header-toko">TOKO</h2>
+    <p id="alamat-toko">Alamat</p>
+    <p id="telepon-toko">Telp</p>
+    <hr>
+    <div id="info-transaksi">
+      <!-- Diisi via JS -->
+    </div>
+    <table id="daftar-belanja">
+      <!-- Diisi via JS -->
+    </table>
+    <p class="total">Total: <span id="total-belanja"></span></p>
+    <p id="footer-toko">Terima kasih!</p>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    function renderStruk() {
+      const data = JSON.parse(localStorage.getItem("struk"));
+      if (!data) return alert("Data struk tidak ditemukan");
+
+      // isi toko dari localStorage atau pengaturan
+      document.getElementById("header-toko").textContent = data.pengaturan.header || "TOKO";
+      document.getElementById("alamat-toko").textContent = data.pengaturan.alamat || "-";
+      document.getElementById("telepon-toko").textContent = data.pengaturan.telepon || "-";
+      document.getElementById("footer-toko").textContent = data.pengaturan.footer || "-";
+
+      // info transaksi
+      const info = `
+        <p>No. Resi: ${data.nomor_resi}</p>
+        <p>Tanggal: ${new Date().toLocaleString("id-ID")}</p>
+        <p>Kasir: ${data.kasir}</p>
+        <hr>
+      `;
+      document.getElementById("info-transaksi").innerHTML = info;
+
+      // daftar belanja
+      let total = 0;
+      let rows = "";
+      data.items.forEach(item => {
+        const subtotal = item.jumlah * item.harga;
+        total += subtotal;
+        rows += `
+          <tr>
+            <td colspan="2">${item.nama}</td>
+          </tr>
+          <tr>
+            <td>${item.jumlah} x ${item.harga}</td>
+            <td class="right">${subtotal}</td>
+          </tr>
+        `;
+      });
+      document.getElementById("daftar-belanja").innerHTML = rows;
+      document.getElementById("total-belanja").textContent = "Rp " + total.toLocaleString("id-ID");
+
+      setTimeout(() => window.print(), 300);
+    }
+  </script>
+</body>
+</html>

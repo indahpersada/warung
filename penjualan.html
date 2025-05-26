@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Penjualan - Buku Warung</title>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/penjualan.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="js/penjualan-barcode.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
+  <style>
+    /* Reset sederhana */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0 1rem;
+      color: #333;
+    }
+    header {
+      padding: 1rem 0;
+      border-bottom: 2px solid #2e86de;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    nav {
+      margin-bottom: 1rem;
+      text-align: center;
+      font-weight: 600;
+    }
+    nav a {
+      margin: 0 0.7rem;
+      text-decoration: none;
+      color: #2e86de;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #145a96;
+    }
+    nav button {
+      background: #e74c3c;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 4px;
+      margin-left: 1rem;
+      transition: background 0.3s;
+    }
+    nav button:hover {
+      background: #c0392b;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+      padding: 1.5rem 2rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    label {
+      flex: 1 1 300px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: #2e86de;
+      outline: none;
+      box-shadow: 0 0 6px #2e86deaa;
+    }
+
+    button {
+      background: #2e86de;
+      color: white;
+      border: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    button:hover {
+      background: #1b4f72;
+    }
+
+    hr {
+      margin: 1.5rem 0;
+      border-color: #ddd;
+    }
+
+    h3 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #2e86de;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    thead {
+      background: #2e86de;
+      color: white;
+      font-weight: 700;
+    }
+    th, td {
+      padding: 0.75rem 0.5rem;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    tbody tr:hover {
+      background: #d6eaf8;
+    }
+
+    #total-bayar {
+      font-size: 1.4rem;
+      color: #27ae60;
+      font-weight: 700;
+    }
+
+    /* Hasil cari */
+    #hasil-cari {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      width: 300px;
+      max-height: 150px;
+      overflow-y: auto;
+      box-shadow: 0 3px 8px rgb(0 0 0 / 0.1);
+      border-radius: 6px;
+      z-index: 1000;
+    }
+    #hasil-cari div {
+      padding: 0.5rem 0.8rem;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+    #hasil-cari div:last-child {
+      border-bottom: none;
+    }
+    #hasil-cari div:hover {
+      background: #2e86de;
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .input-group {
+        flex-direction: column;
+      }
+      label {
+        flex: none;
+      }
+      #hasil-cari {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body onload="cekLogin()">
+  <header>
+    <h1>Input Penjualan</h1>
+  </header>
+
+  <main>
+    <nav>
+      <a href="index.html">Home</a> |
+      <a href="produk.html">Produk</a> |
+      <a href="penjualan.html">Penjualan</a> |
+      <a href="laporan.html">Laporan</a> |
+      <a href="pengaturan.html">Pengaturan</a>
+      <button onclick="logout()">Logout</button>
+    </nav>
+
+    <section class="input-group" style="position: relative;">
+      <label for="cari-produk">Kode / Nama Produk:</label>
+      <input type="text" id="cari-produk" oninput="cariProduk()" placeholder="Ketik atau scan barcode..." autocomplete="off" />
+      <div id="hasil-cari"></div>
+    </section>
+
+		<button onclick="mulaiScanner()">📷 Scan Kamera</button>
+	  	<div id="scanner" style="width: 200px; display: none;"></div>
+		<audio id="beep" src="sound/beep.mp3" preload="auto"></audio>
+
+    <section class="input-group">
+      <label for="jumlah">Jumlah:</label>
+      <input type="number" id="jumlah" value="1" min="1" />
+      <button onclick="tambahPenjualan()">+ Tambah</button>
+    </section>
+
+    <hr />
+
+    <section>
+      <h3>Daftar Penjualan</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Kode</th>
+            <th>Nama Produk</th>
+            <th>Harga</th>
+            <th>Jumlah</th>
+            <th>Subtotal</th>
+            <th>Hapus</th>
+          </tr>
+        </thead>
+        <tbody id="tabel-penjualan"></tbody>
+      </table>
+      <p style="text-align: right; margin-top: 1rem;">
+        <strong>Total:</strong> Rp <span id="total-bayar">0</span>
+      </p>
+      <button style="width: 100%; font-size: 1.3rem; padding: 1rem 0;" onclick="simpanPenjualan()">💾 Bayar</button>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Laporan Penjualan</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/laporan.js" defer></script>
+</head>
+<body onload="cekLogin()">
+
+  <!-- Header -->
+  <header class="no-print">
+    <h1>Laporan Penjualan</h1>
+	<button onclick="location.href='index.html'">⬅️ Kembali ke Awal</button>
+    <button onclick="logout()">Logout</button>
+  </header>
+
+  <!-- Tombol Cetak -->
+  <section class="no-print">
+    <button onclick="window.print()">🖨️ Cetak / Export PDF</button>
+  </section>
+
+  <!-- Tanggal Cetak -->
+  <p id="tanggal-cetak"></p>
+
+  <!-- Main Laporan -->
+  <main>
+    <!-- Filter -->
+    <section class="no-print">
+      <label>Filter:
+        <select id="filter" onchange="tampilkanLaporan()">
+          <option value="hari">Hari Ini</option>
+          <option value="bulan">Bulan Ini</option>
+          <option value="tahun">Tahun Ini</option>
+          <option value="semua">Semua</option>
+        </select>
+      </label>
+    </section>
+
+    <!-- Grafik -->
+    <section>
+      <canvas id="grafikPenjualan" height="100"></canvas>
+    </section>
+
+    <!-- Ringkasan -->
+    <section id="ringkasan">
+      <p>Total Penjualan: <strong id="total-rp">Rp 0</strong></p>
+      <p>Total Laba: <strong id="total-laba">Rp 0</strong></p>
+    </section>
+
+    <!-- Tabel -->
+    <section>
+      <table border="1" cellpadding="4" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Produk</th>
+            <th>Jumlah</th>
+            <th>Total</th>
+            <th>Kasir</th>
+          </tr>
+        </thead>
+        <tbody id="tabel-laporan"></tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

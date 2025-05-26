@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Uji Scanner Barcode + Beep</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    #scanner {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      padding: 10px;
+      border: 2px dashed #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔍 Uji Coba Scanner Barcode</h2>
+  <div id="scanner"></div>
+  <button onclick="mulaiScanner()">Mulai Scanner</button>
+  <button onclick="stopScanner()">Stop Scanner</button>
+
+  <!-- Suara beep lokal -->
+  <audio id="beep" src="beep.wav" preload="auto"></audio>
+
+  <script>
+    let html5Qr;
+    let scannerAktif = false;
+
+    function mulaiScanner() {
+      if (scannerAktif) return;
+
+      const scannerDiv = document.getElementById("scanner");
+      const beep = document.getElementById("beep");
+
+      html5Qr = new Html5Qrcode("scanner");
+
+      Html5Qrcode.getCameras().then(cameras => {
+        if (!cameras || cameras.length === 0) {
+          alert("🚨 Kamera tidak tersedia");
+          return;
+        }
+
+        const cam = cameras[0]; // Gunakan kamera pertama yang ditemukan
+
+        html5Qr.start(
+          cam.id,
+          {
+            fps: 10,
+            qrbox: 250,
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E
+            ]
+          },
+          kode => {
+            console.log("✅ Barcode:", kode);
+            beep.play().catch(err => console.warn("🔇 Gagal play beep:", err));
+
+            // Stop scanner setelah scan berhasil
+            html5Qr.stop().then(() => {
+              scannerDiv.innerHTML = ""; // Bersihkan area scanner
+              scannerAktif = false;
+              alert("📦 Barcode: " + kode);
+            });
+          },
+          err => {
+            // Bisa abaikan atau log error ringan
+          }
+        ).then(() => {
+          scannerAktif = true;
+        }).catch(err => {
+          alert("🚫 Gagal akses kamera: " + err);
+        });
+
+      }).catch(err => {
+        alert("❌ Tidak bisa ambil kamera: " + err);
+      });
+    }
+
+    function stopScanner() {
+      if (html5Qr && scannerAktif) {
+        html5Qr.stop().then(() => {
+          document.getElementById("scanner").innerHTML = "";
+          scannerAktif = false;
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>

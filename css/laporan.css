@@ -1,0 +1,75 @@
+/* ========== NORMAL STYLE ========== */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #eee;
+}
+
+#ringkasan {
+  font-size: 16px;
+}
+
+#tanggal-cetak {
+  font-size: 14px;
+  color: #555;
+  margin: 10px 0;
+}
+
+
+/* ========== CETAK / PRINT STYLE ========== */
+@media print {
+
+  /* Sembunyikan semua elemen dengan class no-print */
+  .no-print {
+    display: none !important;
+  }
+
+  #tanggal-cetak {
+    display: block !important;
+    font-weight: bold;
+  }
+
+  canvas {
+    max-width: 100% !important;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}
