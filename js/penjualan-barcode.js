@@ -17,20 +17,40 @@ const config = {
 
 // Inisialisasi dropdown kamera
 function initKameraDropdown() {
+  const scannerContainer = document.getElementById("scanner");
+
+  // Buat wrapper dropdown
+  const dropdownWrapper = document.createElement("div");
+  dropdownWrapper.style.margin = "1rem 0";
+
+  const label = document.createElement("label");
+  label.textContent = "Pilih Kamera:";
+  label.style.display = "block";
+  label.style.marginBottom = "0.5rem";
+
   const select = document.createElement("select");
   select.id = "kameraSelect";
-  select.style.margin = "0.5rem 0";
+  select.style.padding = "8px";
+  select.style.fontSize = "1rem";
+  select.style.borderRadius = "6px";
+  select.style.border = "1px solid #ccc";
+  select.style.width = "100%";
+  select.style.maxWidth = "300px";
 
+  dropdownWrapper.appendChild(label);
+  dropdownWrapper.appendChild(select);
+
+  // Sisipkan sebelum tombol scanner
   const scannerBtn = document.querySelector("button[onclick='mulaiScanner()']");
-  scannerBtn.parentNode.insertBefore(select, scannerBtn);
+  scannerBtn.parentNode.insertBefore(dropdownWrapper, scannerBtn);
 
+  // Ambil daftar kamera
   Html5Qrcode.getCameras().then(cameras => {
     if (!cameras.length) {
       alert("🚨 Tidak ada kamera ditemukan.");
       return;
     }
 
-    select.innerHTML = "";
     cameras.forEach(cam => {
       const opt = document.createElement("option");
       opt.value = cam.id;
@@ -47,6 +67,7 @@ function initKameraDropdown() {
     alert("🚨 Tidak bisa akses kamera.");
   });
 }
+
 
 // Mulai / Stop Scanner
 function mulaiScanner() {
